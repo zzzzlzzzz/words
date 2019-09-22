@@ -1,0 +1,28 @@
+.user-body {
+    height: 100vh;
+    background: #eee;
+}
+
+.user-container {
+    display: table;
+    height: 100vh;
+}
+
+.user-row {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.user-col {
+    float: none;
+}
+
+.user-card {
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.user-title {
+    margin-bottom: 40px;
+}

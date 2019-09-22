@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% import 'bootstrap/utils.html' as utils %}
+
+{% block styles %}
+    {{super()}}
+    <link href="{{url_for('static', filename='user.css')}}" rel="stylesheet">
+{% endblock %}
+
+{% block title %}{{ form_title }}{{ super() }}{% endblock %}
+
+{% block body_attribs %}
+ class="user-body"
+{% endblock %}
+
+{% block content %}
+    <div class="container user-container">
+        <div class="row user-row">
+            <div class="center-block col-lg-4 col-md-5 col-sm-6 user-col">
+                <div class="user-card">
+                    <h1 class="user-title">{{ form_title }}</h1>
+                    {{ utils.flashed_messages(container=False) }}
+                    {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

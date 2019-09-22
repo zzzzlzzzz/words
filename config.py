@@ -6,6 +6,8 @@ class Config:
     SQLALCHEMY_DATABASE_URI = environ.get('WORDS_SQLALCHEMY_DATABASE_URI', '')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = dict(pool_pre_ping=True)
+    RECAPTCHA_PUBLIC_KEY = environ.get('WORDS_RECAPTCHA_PUBLIC_KEY', '')
+    RECAPTCHA_PRIVATE_KEY = environ.get('WORDS_RECAPTCHA_PRIVATE_KEY', '')
 
 
 class DevelopmentConfig(Config):
@@ -13,7 +15,8 @@ class DevelopmentConfig(Config):
 
 
 class TestConfig(Config):
-    pass
+    TESTING = True
+    WTF_CSRF_ENABLED = False
 
 
 class ProductionConfig(Config):
