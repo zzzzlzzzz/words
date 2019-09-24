@@ -1,0 +1,20 @@
+.edit-col {
+    float: none;
+}
+
+.edit-logotype {
+    width: 128px;
+    height: 128px;
+}
+
+.edit-logotype-input {
+    display: none !important;
+}
+
+.edit-username {
+    font-weight: bold;
+}
+
+.edit-username-block {
+    margin-bottom: 15px;
+}

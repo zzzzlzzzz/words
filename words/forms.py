@@ -1,9 +1,12 @@
 from string import ascii_lowercase, ascii_uppercase, digits, punctuation
 
+from flask_bootstrap import bootstrap_find_resource
 from flask_wtf import FlaskForm, RecaptchaField
+from flask_wtf.file import FileField
 from flask_wtf.recaptcha.validators import Recaptcha
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Length, EqualTo, Regexp, ValidationError
+from wtforms.widgets import TextArea, HTMLString
+from wtforms.validators import DataRequired, Length, EqualTo, Regexp, Optional, ValidationError
 
 
 class PasswordStrong:
@@ -26,7 +29,7 @@ class PasswordStrong:
 
 
 class SignUpForm(FlaskForm):
-    username = StringField('Username', [DataRequired(), Length(5, 32), Regexp('^[a-z0-9_]*$', message='Field must be contains lower case letters, digits and _.')])
+    username = StringField('Username', [DataRequired(), Length(5, 16), Regexp('^[a-z0-9_]*$', message='Field must be contains lower case letters, digits and _.')])
     password = PasswordField('Password', [DataRequired(), Length(8, 32), PasswordStrong()])
     password_repeat = PasswordField('Password repeat', [DataRequired(), EqualTo('password')])
     recaptcha = RecaptchaField(validators=[Recaptcha('ReCaptcha invalid')])
@@ -38,3 +41,32 @@ class SignInForm(FlaskForm):
     password = PasswordField('Password', [DataRequired()])
     recaptcha = RecaptchaField(validators=[Recaptcha('ReCaptcha invalid')])
     submit = SubmitField('Sign In')
+
+
+class PasswordChangeForm(FlaskForm):
+    old_password = PasswordField('Old password', [DataRequired()])
+    password = PasswordField('New password', [DataRequired(), Length(8, 32), PasswordStrong()])
+    password_repeat = PasswordField('New password repeat', [DataRequired(), EqualTo('password')])
+    submit = SubmitField('Change')
+
+
+class MarkdownEditor(TextArea):
+    MARKDOWN_TEMPLATE = '''{}
+<script src="{}"></script>
+<script>
+var simplemde = new SimpleMDE({{element: document.getElementById("{}"), spellChecker: false, promptURLs: true}});
+</script>
+'''
+
+    def __call__(self, field, **kwargs):
+        return HTMLString(self.MARKDOWN_TEMPLATE.format(super().__call__(field, **kwargs),
+                                                        bootstrap_find_resource('simplemde.js', cdn='simplemde-js'),
+                                                        field.id))
+
+
+class ProfileForm(FlaskForm):
+    logotype = FileField('Logotype', [Optional()])
+    first_name = StringField('First name', [Optional(), Length(max=32)])
+    last_name = StringField('Last name', [Optional(), Length(max=32)])
+    about = StringField('About', [Optional()], widget=MarkdownEditor())
+    submit = SubmitField('Save')
