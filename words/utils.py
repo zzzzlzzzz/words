@@ -2,9 +2,14 @@ from random import randint, choice
 from os import path, listdir
 from io import BytesIO
 from base64 import b64encode
+import warnings
 
 from flask import current_app
 from PIL import Image, ImageDraw, ImageFont
+import magic
+
+
+warnings.simplefilter('error', Image.DecompressionBombWarning)
 
 
 def generate_logotype(text, base_color=(255, 255, 255)):
@@ -30,3 +35,22 @@ def generate_logotype(text, base_color=(255, 255, 255)):
     logotype_buffer = BytesIO()
     logotype.save(logotype_buffer, 'jpeg')
     return 'data:image/jpg;base64,{}'.format(b64encode(logotype_buffer.getvalue()).decode('utf8'))
+
+
+def resize_logotype(fp):
+    """Resize fp to JPG 512x512
+
+    :param fp: File pointer
+    :return: base64 encoded logotype
+    :raise: ValueError - if fp not image or Decompression Bomb detected
+    """
+    try:
+        mime_type = magic.from_buffer(fp.read(1024), mime=True)
+        fp.seek(0)
+        if mime_type not in ['image/jpeg', 'image/pjpeg', 'image/png']:
+            raise ValueError()
+        logotype_buffer = BytesIO()
+        Image.open(fp).resize((512, 512)).save(logotype_buffer, 'jpeg')
+        return 'data:image/jpg;base64,{}'.format(b64encode(logotype_buffer.getvalue()).decode('utf8'))
+    except (IOError, Image.DecompressionBombError):
+        raise ValueError()

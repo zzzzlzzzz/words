@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% import 'bootstrap/utils.html' as utils %}
 
 {% block styles %}
     {{super()}}
@@ -52,6 +53,7 @@
                         </div>
                         <div class="panel-footer text-center">
                             {{ wtf.form_field(form.submit, button_map={'submit': 'primary'}) }}
+                            {{ utils.flashed_messages(container=False) }}
                         </div>
                     </form>
                 </div>

@@ -1,11 +1,12 @@
 from datetime import datetime
 
-from flask import Blueprint, render_template, g, escape
+from flask import Blueprint, render_template, g, escape, flash
 
 from words.models import UserStatus
 from words.user import only_for
 from words.forms import ProfileForm
 from words.ext import db
+from words.utils import resize_logotype
 
 
 bp = Blueprint('edit', __name__, url_prefix='/edit')
@@ -24,7 +25,10 @@ def profile():
         if form.about.data:
             g.user.about = escape(form.about.data)
         if form.logotype.data:
-            pass    # TODO: check mime type, resize and update logotype
+            try:
+                g.user.logotype = resize_logotype(form.logotype.data.stream)
+            except ValueError:
+                flash('Avatar should be JPG or PNG file format', 'warning')
         db.session.commit()
     return render_template('edit/base.html', form=form)
 
