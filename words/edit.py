@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from flask import Blueprint, render_template, g, escape, flash
+from flask import Blueprint, render_template, g, flash
 
 from words.models import UserStatus
 from words.user import only_for
-from words.forms import ProfileForm
+from words.forms import ProfileForm, PostForm
 from words.ext import db
 from words.utils import resize_logotype
 
@@ -18,25 +18,25 @@ def profile():
     form = ProfileForm(first_name=g.user.first_name, last_name=g.user.last_name, about=g.user.about)
     if form.validate_on_submit():
         g.user.edited = datetime.utcnow()
-        if form.first_name.data:
-            g.user.first_name = escape(form.first_name.data)
-        if form.last_name.data:
-            g.user.last_name = escape(form.last_name.data)
-        if form.about.data:
-            g.user.about = escape(form.about.data)
+        g.user.first_name = form.first_name.data
+        g.user.last_name = form.last_name.data
+        g.user.about = form.about.data
         if form.logotype.data:
             try:
                 g.user.logotype = resize_logotype(form.logotype.data.stream)
             except ValueError:
                 flash('Avatar should be JPG or PNG file format', 'warning')
         db.session.commit()
-    return render_template('edit/base.html', form=form)
+    return render_template('edit/profile.html', form=form)
 
 
 @bp.route('post', methods=('GET', 'POST'))
 @only_for(minimal=UserStatus.NORMAL)
 def new_post():
-    pass
+    form = PostForm()
+    if form.validate_on_submit():
+        pass
+    return render_template('edit/post.html', form=form)
 
 
 @bp.route('post/<postname>', methods=('GET', 'POST'))

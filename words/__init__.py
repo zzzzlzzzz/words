@@ -21,13 +21,14 @@ def create_app():
     csrf.init_app(app)
     bootstrap.init_app(app)
     app.extensions['bootstrap']['cdns'].update({'simplemde-css': WebCDN('//cdn.jsdelivr.net/simplemde/latest/'),
-                                                'simplemde-js': WebCDN('//cdn.jsdelivr.net/simplemde/latest/')})
+                                                'simplemde-js': WebCDN('//cdn.jsdelivr.net/simplemde/latest/'),
+                                                'infinite-scroll': WebCDN('//unpkg.com/infinite-scroll@3/dist/'), })
     app_bcrypt.init_app(app)
     moment.init_app(app)
     app.register_blueprint(user.bp)
     app.register_blueprint(edit.bp)
     app.register_blueprint(post.bp)
-    app.add_url_rule('/', 'index', methods=('GET', ))
+    #app.add_url_rule('/', 'index', methods=('GET', ))
     app.register_error_handler(Exception, error.page_500)
     app.register_error_handler(500, error.page_500)
     app.register_error_handler(CSRFError, error.page_400)

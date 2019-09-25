@@ -27,6 +27,7 @@ class User(db.Model):
     first_name = db.Column(db.String(32), nullable=False, default='')
     last_name = db.Column(db.String(32), nullable=False, default='')
     about = db.Column(db.Text, nullable=False, default='')
+    about_time = db.Column(db.Integer, nullable=False, default=0)
     service_subscribes = db.relationship('ServiceSubscribe', back_populates='user', cascade='all, delete-orphan', passive_deletes=True)
     posts = db.relationship('Post', back_populates='user', cascade='all, delete-orphan', passive_deletes=True)
 
@@ -63,10 +64,13 @@ class Post(db.Model):
     edited = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     title = db.Column(db.String(256), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    content_time = db.Column(db.Integer, nullable=False, default=0)
     post_tags = db.relationship('PostTag', back_populates='post', cascade='all, delete-orphan', passive_deletes=True)
 
-    def __init__(self, content):
+    def __init__(self, title, content, content_time):
+        self.title = title
         self.content = content
+        self.content_time = content_time
 
 
 class PostTag(db.Model):

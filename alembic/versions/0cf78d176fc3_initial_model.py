@@ -29,6 +29,7 @@ def upgrade():
     sa.Column('first_name', sa.String(length=32), nullable=False),
     sa.Column('last_name', sa.String(length=32), nullable=False),
     sa.Column('about', sa.Text(), nullable=False),
+    sa.Column('about_time', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('user_id'),
     sa.UniqueConstraint('username')
     )
@@ -39,6 +40,7 @@ def upgrade():
     sa.Column('edited', sa.DateTime(), nullable=False),
     sa.Column('title', sa.String(length=256), nullable=False),
     sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('content_time', sa.Integer(), nullable=False),
     sa.UniqueConstraint('user_id', 'title', name='post_user_id_title_key'),
     sa.ForeignKeyConstraint(['user_id'], ['user.user_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('post_id'),

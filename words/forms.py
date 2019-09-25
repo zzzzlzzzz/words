@@ -1,4 +1,5 @@
 from string import ascii_lowercase, ascii_uppercase, digits, punctuation
+import re
 
 from flask_bootstrap import bootstrap_find_resource
 from flask_wtf import FlaskForm, RecaptchaField
@@ -70,3 +71,8 @@ class ProfileForm(FlaskForm):
     last_name = StringField('Last name', [Optional(), Length(max=32)])
     about = StringField('About', [Optional()], widget=MarkdownEditor())
     submit = SubmitField('Save')
+
+
+class PostForm(FlaskForm):
+    content = StringField('Post', [Regexp('^# .{1,256}$', re.MULTILINE, message='Start your message with Header')], widget=MarkdownEditor())
+    submit = SubmitField('Post It')

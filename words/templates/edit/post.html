@@ -1,0 +1,40 @@
+{% extends 'edit/base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% import 'bootstrap/utils.html' as utils %}
+
+
+{% block edit_form %}
+    <form action="" method="post" class="panel-info">
+        {{ form.hidden_tag() }}
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-lg-1 col-md-1 col-sm-1">
+                    <img src="{{ g.user.logotype }}" alt="logotype" class="edit-logotype-small img-circle">
+                </div>
+                <div class="col-lg-9 col-md-9 col-sm-9">
+                     <div class="row">
+                         <div class="col-lg-12 col-md-12 col-sm-12">
+                             {% if g.user.first_name %}
+                                {{ g.user.first_name }}
+                             {% endif %}
+                             {% if g.user.last_name %}
+                                 {{ g.user.last_name }}
+                             {% endif %}
+                         </div>
+                     </div>
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12">
+                            @{{ g.user.username }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            {{ wtf.form_field(form.content) }}
+        </div>
+        <div class="panel-footer text-center">
+            {{ wtf.form_field(form.submit, button_map={'submit': 'primary'}) }}
+        </div>
+    </form>
+{% endblock %}

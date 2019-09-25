@@ -1,0 +1,118 @@
+{% extends 'post/base.html' %}
+
+{% block head %}
+{{ super() }}
+{% if page > 1 %}<link rel="prev" href="{{ url_for('post.posts', username=g.post_user.username, page=(page - 1)) }}">{% endif %}
+{% if page < total_pages %}<link rel="next" href="{{ url_for('post.posts', username=g.post_user.username, page=(page + 1)) }}">{% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container post-container">
+        {% if page == 1 %}
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-lg-1 col-md-1 col-sm-1">
+                                    <img src="{{ g.post_user.logotype }}" alt="logotype" class="post-logotype-small img-circle">
+                                </div>
+                                <div class="col-lg-11 col-md-11 col-sm-11">
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            {% if g.post_user.first_name %}{{ g.post_user.first_name }} {% endif %}{% if g.post_user.last_name %}{{ g.post_user.last_name }} {% endif %}@{{ g.post_user.username }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-3 col-md-4 col-sm-4">
+                                            Registered: {{ moment(g.post_user.registered).fromNow() }}
+                                        </div>
+                                        <div class="col-lg-3 col-md-4 col-sm-4">
+                                            Edited: {{ moment(g.post_user.edited).fromNow() }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            {{ g.post_user.about_time // 60 }} minutes to read
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            {{ g.post_user.about }}
+                        </div>
+                        {% if tags %}
+                            <div class="panel-footer">
+                                {% for tag in tags %}
+                                    {{ tag }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {% for post in posts %}
+            <div class="row post">
+                <div class="col-lg-12 col-md-12 col-sm-12">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-lg-1 col-md-1 col-sm-1">
+                                    <img src="{{ g.post_user.logotype }}" alt="logotype" class="post-logotype-small img-circle">
+                                </div>
+                                <div class="col-lg-11 col-md-11 col-sm-11">
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            {% if g.post_user.first_name %}{{g.post_user.first_name}} {% endif %}{% if g.post_user.last_name %}{{ g.post_user.last_name }} {% endif %}@{{ g.post_user.username }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-3 col-md-4 col-sm-4">
+                                            Created: {{ moment(post.created).fromNow() }}
+                                        </div>
+                                        <div class="col-lg-3 col-md-4 col-sm-4">
+                                            Edited: {{ moment(post.edited).fromNow() }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            {{ post.content_time // 60 }} minutes to read
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            {{ post.content }}
+                        </div>
+                        {% if post.tags %}
+                            <div class="panel-footer">
+                                {% for post_tag in post.tags %}
+                                    {{ post_tag }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="{{bootstrap_find_resource('infinite-scroll.pkgd.js', cdn='infinite-scroll')}}"></script>
+    <script>
+        $(document).ready(function () {
+            $('.post-container').infiniteScroll({
+                path: '{{ url_for('post.posts', username=g.post_user.username, page=2)|replace('2', '{{#}}') }}',
+                append: '.post',
+            });
+            $('.post-container').on('append.infiniteScroll', function( event, response, path, items ) {
+                flask_moment_render_all();
+            })
+        });
+    </script>
+{% endblock %}
