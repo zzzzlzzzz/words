@@ -40,6 +40,7 @@ def posts(page):
         raise abort(404)
     user_posts = [{'created': _.created,
                    'edited': _.edited,
+                   'title': _.title,
                    'content_time': _.content_time,
                    'content': Markup(markdown2.markdown(_.content)),
                    'tags': [_.content for _ in PostTag.query.filter_by(post_id=_.post_id).all()]}
@@ -60,10 +61,34 @@ def post(postname):
     return render_template('post/single.html', post=post)
 
 
-@bp.route('tag/<tagname>/', methods=('GET', ))
-def posts_by_tag(tagname):
+@bp.route('tag/<tagname>', methods=('GET', ), defaults={'page': 1})
+@bp.route('tag/<tagname>/page/<int:page>', methods=('GET', ))
+def posts_by_tag(tagname, page):
     """View for show profile posts by tag
 
     :param tagname: Tagname for show posts
+    :param page: Page for show
     """
-    pass
+    post_per_page = current_app.config['POST_PER_PAGE']
+    total_user_posts = db.session.query(db.func.count(Post.post_id)).\
+                           select_from(PostTag).\
+                           join(PostTag.post).\
+                           filter(Post.user_id == g.post_user['user_id'], PostTag.content == tagname).\
+                           scalar() or 0
+    total_pages = ceil(total_user_posts / post_per_page)
+    if page < 1 or page > total_pages:
+        raise abort(404)
+    user_posts = [{'created': _.created,
+                   'edited': _.edited,
+                   'content_time': _.content_time,
+                   'content': Markup(markdown2.markdown(_.content)),
+                   'tags': [_.content for _ in PostTag.query.filter_by(post_id=_.post_id).all()]}
+                  for _ in db.session.query(Post).
+                      select_from(PostTag).
+                      join(PostTag.post).
+                      filter(Post.user_id == g.post_user['user_id'], PostTag.content == tagname).
+                      order_by(Post.post_id).
+                      offset((page - 1) * post_per_page).
+                      limit(post_per_page).
+                      all()]
+    return render_template('post/multiple-tag.html', tag=tagname, page=page, total_pages=total_pages, posts=user_posts)

@@ -1,0 +1,34 @@
+{% extends 'post/base.html' %}
+{% import 'post/utils.html' as utils with context %}
+
+{% block title %}Tag {{ tag }} | {% if g.post_user.first_name %}{{ g.post_user.first_name }} {% endif %}{% if g.post_user.last_name %}{{ g.post_user.last_name }} {% endif %}@{{ g.post_user.username }}{% endblock %}
+
+{% block head %}
+{{ super() }}
+{% if page > 1 %}<link rel="prev" href="{{ url_for('post.posts_by_tag', username=g.post_user.username, tagname=tag, page=(page - 1)) }}">{% endif %}
+{% if page < total_pages %}<link rel="next" href="{{ url_for('post.posts_by_tag', username=g.post_user.username, tagname=tag, page=(page + 1)) }}">{% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container post-container">
+        {% for post in posts %}
+            {{ utils.post_item(post) }}
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="{{bootstrap_find_resource('infinite-scroll.pkgd.js', cdn='infinite-scroll')}}"></script>
+    <script>
+        $(document).ready(function () {
+            $('.post-container').infiniteScroll({
+                path: '{{ url_for('post.posts', username=g.post_user.username, tagname=tag, page=2)|replace('2', '{{#}}') }}',
+                append: '.post',
+            });
+            $('.post-container').on('append.infiniteScroll', function( event, response, path, items ) {
+                flask_moment_render_all();
+            })
+        });
+    </script>
+{% endblock %}

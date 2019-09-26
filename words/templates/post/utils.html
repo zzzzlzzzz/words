@@ -1,0 +1,47 @@
+{% macro post_item(post) %}
+    <div class="row post">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-lg-1 col-md-1 col-sm-1">
+                            <img src="{{ g.post_user.logotype }}" alt="logotype" class="post-logotype-small img-circle">
+                        </div>
+                        <div class="col-lg-11 col-md-11 col-sm-11">
+                            <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12">
+                                    {% if g.post_user.first_name %}{{g.post_user.first_name}} {% endif %}{% if g.post_user.last_name %}{{ g.post_user.last_name }} {% endif %}@{{ g.post_user.username }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-3 col-md-4 col-sm-4">
+                                    Created: {{ moment(post.created).fromNow() }}
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-4">
+                                    Edited: {{ moment(post.edited).fromNow() }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12">
+                                    {{ post.content_time // 60 }} minutes to read
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    {{ post.content }}
+                </div>
+                <div class="panel-footer text-center">
+                    {% if post.tags %}
+                        {% for post_tag in post.tags %}
+                            <a class="label label-primary" href="{{ url_for('post.posts_by_tag', username=g.post_user.username, tagname=post_tag) }}">{{ post_tag }}</a>
+                        {% endfor %}
+                        <hr/>
+                    {% endif %}
+                    <a href="{{ url_for('post.post', username=g.post_user.username, postname=post.title) }}">more</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}

@@ -1,4 +1,7 @@
 {% extends 'post/base.html' %}
+{% import 'post/utils.html' as utils with context %}
+
+{% block title %}{% if g.post_user.first_name %}{{ g.post_user.first_name }} {% endif %}{% if g.post_user.last_name %}{{ g.post_user.last_name }} {% endif %}@{{ g.post_user.username }}{% endblock %}
 
 {% block head %}
 {{ super() }}
@@ -43,9 +46,9 @@
                             {{ g.post_user.about }}
                         </div>
                         {% if tags %}
-                            <div class="panel-footer">
+                            <div class="panel-footer text-center">
                                 {% for tag in tags %}
-                                    {{ tag }}
+                                    <a class="label label-primary" href="{{ url_for('post.posts_by_tag', username=g.post_user.username, tagname=tag) }}">{{ tag }}</a>
                                 {% endfor %}
                             </div>
                         {% endif %}
@@ -54,49 +57,7 @@
             </div>
         {% endif %}
         {% for post in posts %}
-            <div class="row post">
-                <div class="col-lg-12 col-md-12 col-sm-12">
-                    <div class="panel panel-info">
-                        <div class="panel-heading">
-                            <div class="row">
-                                <div class="col-lg-1 col-md-1 col-sm-1">
-                                    <img src="{{ g.post_user.logotype }}" alt="logotype" class="post-logotype-small img-circle">
-                                </div>
-                                <div class="col-lg-11 col-md-11 col-sm-11">
-                                    <div class="row">
-                                        <div class="col-lg-12 col-md-12 col-sm-12">
-                                            {% if g.post_user.first_name %}{{g.post_user.first_name}} {% endif %}{% if g.post_user.last_name %}{{ g.post_user.last_name }} {% endif %}@{{ g.post_user.username }}
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-3 col-md-4 col-sm-4">
-                                            Created: {{ moment(post.created).fromNow() }}
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 col-sm-4">
-                                            Edited: {{ moment(post.edited).fromNow() }}
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 col-md-12 col-sm-12">
-                                            {{ post.content_time // 60 }} minutes to read
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="panel-body">
-                            {{ post.content }}
-                        </div>
-                        {% if post.tags %}
-                            <div class="panel-footer">
-                                {% for post_tag in post.tags %}
-                                    {{ post_tag }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+            {{ utils.post_item(post) }}
         {% endfor %}
     </div>
 {% endblock %}

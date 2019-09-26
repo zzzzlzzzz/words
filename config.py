@@ -5,7 +5,7 @@ class Config:
     SECRET_KEY = environ.get('WORDS_SECRET_KEY', 'development')
     SQLALCHEMY_DATABASE_URI = environ.get('WORDS_SQLALCHEMY_DATABASE_URI', '')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = dict(pool_pre_ping=True)
+    SQLALCHEMY_ENGINE_OPTIONS = dict(pool_pre_ping=True, echo=True)
     RECAPTCHA_PUBLIC_KEY = environ.get('WORDS_RECAPTCHA_PUBLIC_KEY', '')
     RECAPTCHA_PRIVATE_KEY = environ.get('WORDS_RECAPTCHA_PRIVATE_KEY', '')
     BRAND = environ.get('WORDS_BRAND', 'world')
