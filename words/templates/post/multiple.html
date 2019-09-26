@@ -64,16 +64,5 @@
 
 {% block scripts %}
     {{ super() }}
-    <script src="{{bootstrap_find_resource('infinite-scroll.pkgd.js', cdn='infinite-scroll')}}"></script>
-    <script>
-        $(document).ready(function () {
-            $('.post-container').infiniteScroll({
-                path: '{{ url_for('post.posts', username=g.post_user.username, page=2)|replace('2', '{{#}}') }}',
-                append: '.post',
-            });
-            $('.post-container').on('append.infiniteScroll', function( event, response, path, items ) {
-                flask_moment_render_all();
-            })
-        });
-    </script>
+    {{ utils.infinite_scroll('.post-container', url_for('post.posts', username=g.post_user.username, page=2)|replace('2', '{{#}}'), '.post') }}
 {% endblock %}

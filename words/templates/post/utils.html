@@ -45,3 +45,18 @@
         </div>
     </div>
 {% endmacro %}
+
+{% macro infinite_scroll(container, path, append) %}
+    <script src="{{bootstrap_find_resource('infinite-scroll.pkgd.js', cdn='infinite-scroll')}}"></script>
+    <script>
+        $(document).ready(function () {
+            $('{{container}}').infiniteScroll({
+                path: '{{path}}',
+                append: '{{append}}',
+            });
+            $('{{container}}').on('append.infiniteScroll', function( event, response, path, items ) {
+                flask_moment_render_all();
+            })
+        });
+    </script>
+{% endmacro %}
