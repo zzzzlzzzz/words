@@ -38,6 +38,7 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('created', sa.DateTime(), nullable=False),
     sa.Column('edited', sa.DateTime(), nullable=False),
+    sa.Column('url', sa.String(length=256), nullable=False),
     sa.Column('title', sa.String(length=256), nullable=False),
     sa.Column('content', sa.Text(), nullable=False),
     sa.Column('content_time', sa.Integer(), nullable=False),

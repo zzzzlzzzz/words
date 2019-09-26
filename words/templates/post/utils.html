@@ -47,7 +47,7 @@
                         {{ post_item_tags(post.tags) }}
                         <hr/>
                     {% endif %}
-                    <a href="{{ url_for('post.post', username=g.post_user.username, postname=post.title) }}">more</a>
+                    <a href="{{ url_for('post.post', username=g.post_user.username, postname=post.url) }}">more</a>
                 </div>
             </div>
         </div>

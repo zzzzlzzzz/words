@@ -67,6 +67,7 @@ def sign_up():
             return redirect(url_for('user.sign_in'))
         except IntegrityError:
             flash('This username already registered. Think better and try again.', 'danger')
+            db.session.rollback()
     return render_template('user/base.html', form=form, form_title='Sign Up')
 
 

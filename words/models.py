@@ -62,12 +62,14 @@ class Post(db.Model):
     user = db.relationship('User', back_populates='posts')
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     edited = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    url = db.Column(db.String(256), nullable=False)
     title = db.Column(db.String(256), nullable=False)
     content = db.Column(db.Text, nullable=False)
     content_time = db.Column(db.Integer, nullable=False, default=0)
     post_tags = db.relationship('PostTag', back_populates='post', cascade='all, delete-orphan', passive_deletes=True)
 
-    def __init__(self, title, content, content_time):
+    def __init__(self, url, title, content, content_time):
+        self.url = url
         self.title = title
         self.content = content
         self.content_time = content_time

@@ -52,6 +52,7 @@ def posts(page):
         raise abort(404)
     user_posts = [{'created': _.created,
                    'edited': _.edited,
+                   'url': _.url,
                    'title': _.title,
                    'content_time': _.content_time,
                    'content': Markup(markdown2.markdown(get_annotation(_.content))),
@@ -77,9 +78,10 @@ def post(postname):
 
     :param postname: Postname for show post
     """
-    post = Post.query.filter_by(user_id=g.post_user['user_id'], title=postname).first_or_404()
+    post = Post.query.filter_by(user_id=g.post_user['user_id'], url=postname).first_or_404()
     post = {'created': post.created,
             'edited': post.edited,
+            'url': post.url,
             'title': post.title,
             'content_time': post.content_time,
             'content': Markup(markdown2.markdown(post.content)),
@@ -106,6 +108,7 @@ def posts_by_tag(tagname, page):
         raise abort(404)
     user_posts = [{'created': _.created,
                    'edited': _.edited,
+                   'url': _.url,
                    'title': _.title,
                    'content_time': _.content_time,
                    'content': Markup(markdown2.markdown(get_annotation(_.content))),
