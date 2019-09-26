@@ -9,7 +9,8 @@ class Config:
     RECAPTCHA_PUBLIC_KEY = environ.get('WORDS_RECAPTCHA_PUBLIC_KEY', '')
     RECAPTCHA_PRIVATE_KEY = environ.get('WORDS_RECAPTCHA_PRIVATE_KEY', '')
     BRAND = environ.get('WORDS_BRAND', 'world')
-    POST_PER_PAGE = environ.get('POST_PER_PAGE', 3)
+    POST_PER_PAGE = environ.get('WORDS_POST_PER_PAGE', 3)
+    LINES_FOR_ANNOTATION = environ.get('WORDS_LINES_PER_ANNOTATION', 3)
 
 
 class DevelopmentConfig(Config):

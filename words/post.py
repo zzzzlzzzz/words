@@ -24,6 +24,16 @@ def pull_user(endpoint, values):
                    'about_time': post_user.about_time, }
 
 
+def get_annotation(text):
+    """
+    Extract annotation from text (first N lines of text)
+
+    :param text: Text for extracting
+    :return: Annotation
+    """
+    return '\n'.join(text.split('\n')[:current_app.config['LINES_FOR_ANNOTATION']])
+
+
 @bp.route('', methods=('GET', ), defaults={'page': 1})
 @bp.route('page/<int:page>', methods=('GET', ))
 def posts(page):
@@ -42,7 +52,7 @@ def posts(page):
                    'edited': _.edited,
                    'title': _.title,
                    'content_time': _.content_time,
-                   'content': Markup(markdown2.markdown(_.content)),
+                   'content': Markup(markdown2.markdown(get_annotation(_.content))),
                    'tags': [_.content for _ in PostTag.query.filter_by(post_id=_.post_id).all()]}
                   for _ in Post.query.filter_by(user_id=g.post_user['user_id']).order_by(Post.post_id).offset((page - 1) * post_per_page).limit(post_per_page).all()]
     user_tags = None
@@ -80,8 +90,9 @@ def posts_by_tag(tagname, page):
         raise abort(404)
     user_posts = [{'created': _.created,
                    'edited': _.edited,
+                   'title': _.title,
                    'content_time': _.content_time,
-                   'content': Markup(markdown2.markdown(_.content)),
+                   'content': Markup(markdown2.markdown(get_annotation(_.content))),
                    'tags': [_.content for _ in PostTag.query.filter_by(post_id=_.post_id).all()]}
                   for _ in db.session.query(Post).
                       select_from(PostTag).
