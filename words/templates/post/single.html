@@ -8,6 +8,7 @@
                 <div class="panel panel-info">
                     {{ utils.post_item_header(post) }}
                     <div class="panel-body">
+                        <h1>{{ post.title }}</h1>
                         {{ post.content }}
                     </div>
                     {% if post.tags %}

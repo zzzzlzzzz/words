@@ -73,4 +73,12 @@ def new_post():
 @bp.route('post/<postname>', methods=('GET', 'POST'))
 @only_for(minimal=UserStatus.NORMAL)
 def edit_post(postname):
-    return render_template('edit/post.html')
+    post = Post.query.filter_by(url=postname).first_or_404()
+    form = PostForm(title=post.title, content=post.content)
+    if form.validate_on_submit():
+        pass    # TODO: set new values here
+    return render_template('edit/post.html',
+                           form=form,
+                           created=post.created,
+                           edited=post.edited,
+                           content_time=post.content_time)
