@@ -1,19 +1,20 @@
 {% extends 'post/base.html' %}
+{% import 'post/utils.html' as utils with context %}
 
 {% block content %}
     <div class="container">
         <div class="row">
             <div class="center-block col-lg-10 col-md-10 col-sm-12 post-col">
                 <div class="panel panel-info">
-                    <div class="panel-heading">
-                        <h1>This</h1>
-                    </div>
+                    {{ utils.post_item_header(post) }}
                     <div class="panel-body">
-                        Is
+                        {{ post.content }}
                     </div>
-                    <div class="panel-footer">
-                        Post
-                    </div>
+                    {% if post.tags %}
+                        <div class="panel-footer text-center">
+                            {{ utils.post_item_tags(post.tags) }}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

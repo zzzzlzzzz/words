@@ -42,7 +42,9 @@ def posts(page):
     :param page: Page for show
     """
     post_per_page = current_app.config['POST_PER_PAGE']
-    total_user_posts = db.session.query(db.func.count(Post.post_id)).filter_by(user_id=g.post_user['user_id']).scalar() or 0
+    total_user_posts = db.session.query(db.func.count(Post.post_id)).\
+                           filter_by(user_id=g.post_user['user_id']).\
+                           scalar() or 0
     total_pages = ceil(total_user_posts / post_per_page)
     if total_pages == 0:
         total_pages = 1
@@ -54,10 +56,18 @@ def posts(page):
                    'content_time': _.content_time,
                    'content': Markup(markdown2.markdown(get_annotation(_.content))),
                    'tags': [_.content for _ in PostTag.query.filter_by(post_id=_.post_id).all()]}
-                  for _ in Post.query.filter_by(user_id=g.post_user['user_id']).order_by(Post.post_id).offset((page - 1) * post_per_page).limit(post_per_page).all()]
+                  for _ in Post.query.
+                      filter_by(user_id=g.post_user['user_id']).
+                      order_by(Post.post_id).
+                      offset((page - 1) * post_per_page).
+                      limit(post_per_page).
+                      all()]
     user_tags = None
     if page == 1:
-        user_tags = [_[0] for _ in db.session.query(PostTag.content).join(PostTag.post).filter(Post.user_id == g.post_user['user_id']).all()]
+        user_tags = [_[0] for _ in db.session.query(PostTag.content).
+            join(PostTag.post).
+            filter(Post.user_id == g.post_user['user_id']).
+            all()]
     return render_template('post/multiple.html', page=page, total_pages=total_pages, posts=user_posts, tags=user_tags)
 
 
@@ -68,6 +78,12 @@ def post(postname):
     :param postname: Postname for show post
     """
     post = Post.query.filter_by(user_id=g.post_user['user_id'], title=postname).first_or_404()
+    post = {'created': post.created,
+            'edited': post.edited,
+            'title': post.title,
+            'content_time': post.content_time,
+            'content': Markup(markdown2.markdown(post.content)),
+            'tags': [_.content for _ in PostTag.query.filter_by(post_id=post.post_id)]}
     return render_template('post/single.html', post=post)
 
 

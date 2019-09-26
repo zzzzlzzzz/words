@@ -4,3 +4,5 @@
     {{ super() }}
     <link href="{{url_for('static', filename='post.css')}}" rel="stylesheet">
 {% endblock %}
+
+{% block brand %}<a class="navbar-brand" href="{{ url_for('post.posts', username=g.post_user.username) }}">@{{ g.post_user.username }}</a>{% endblock %}

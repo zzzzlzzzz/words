@@ -23,7 +23,7 @@
                                 <div class="col-lg-11 col-md-11 col-sm-11">
                                     <div class="row">
                                         <div class="col-lg-12 col-md-12 col-sm-12">
-                                            {% if g.post_user.first_name %}{{ g.post_user.first_name }} {% endif %}{% if g.post_user.last_name %}{{ g.post_user.last_name }} {% endif %}@{{ g.post_user.username }}
+                                            {% if g.post_user.first_name %}{{ g.post_user.first_name }} {% endif %}{% if g.post_user.last_name %}{{ g.post_user.last_name }} {% endif %}<a href="{{ url_for('post.posts', username=g.post_user.username) }}">@{{ g.post_user.username }}</a>
                                         </div>
                                     </div>
                                     <div class="row">
