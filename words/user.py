@@ -83,7 +83,7 @@ def sign_in():
                 if is_url_safe(redirect_next):
                     return redirect(redirect_next)
             except KeyError:
-                pass    # TODO: redirect to user page
+                return redirect(url_for('post.posts', username=user.username))
         else:
             flash('Invalid credentials', 'danger')
     return render_template('user/base.html', form=form, form_title='Sign In')
@@ -94,7 +94,7 @@ def sign_in():
 def sign_out():
     """Sign Out from application"""
     session.pop('user_id', None)
-    return redirect(url_for('user.sign_in'))    # TODO: maybe redirect to user page
+    return redirect(url_for('post.posts', username=g.user.username))
 
 
 @bp.route('change-password', methods=('GET', 'POST', ))
@@ -105,7 +105,8 @@ def change_password():
     if form.validate_on_submit():
         if app_bcrypt.check_password_hash(g.user.password, form.old_password.data):
             g.user.password = app_bcrypt.generate_password_hash(form.password.data)
-            db.session.commit()     # TODO: maybe redirect to user page
+            db.session.commit()
+            return redirect(url_for('post.posts', username=g.user.username))
         else:
             flash('Invalid credentials', 'danger')
     return render_template('user/base.html', form=form, form_title='Change password')

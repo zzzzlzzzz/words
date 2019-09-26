@@ -74,5 +74,5 @@ class ProfileForm(FlaskForm):
 
 
 class PostForm(FlaskForm):
-    content = StringField('Post', [Regexp('^# .{1,256}$', re.MULTILINE, message='Start your message with Header')], widget=MarkdownEditor())
+    content = StringField('Post', [Regexp(r'''^# [\w\d\s]{1,256}$''', re.MULTILINE, message='Start your message with Heading (Ctrl-H)')], widget=MarkdownEditor())
     submit = SubmitField('Post It')
