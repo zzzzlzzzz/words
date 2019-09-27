@@ -1,7 +1,7 @@
 from math import ceil
 
-from flask import Blueprint, render_template, current_app, g, abort, Markup
-import markdown2
+from sqlalchemy.orm.exc import NoResultFound
+from flask import Blueprint, render_template, current_app, g, abort, redirect, url_for
 
 from words.models import User, Post, PostTag
 from words.ext import db
@@ -12,26 +12,33 @@ bp = Blueprint('post', __name__, url_prefix='/user/<username>')
 
 @bp.url_value_preprocessor
 def pull_user(endpoint, values):
-    post_user = User.query.filter_by(username=values.pop('username')).first_or_404()
-    g.post_user = {'user_id': post_user.user_id,
-                   'username': post_user.username,
-                   'registered': post_user.registered,
-                   'edited': post_user.edited,
-                   'logotype': post_user.logotype,
-                   'first_name': post_user.first_name,
-                   'last_name': post_user.last_name,
-                   'about': Markup(markdown2.markdown(post_user.about)),
-                   'about_time': post_user.about_time, }
+    g.post_user = User.query.filter_by(username=values.pop('username')).first_or_404().serialize()
 
 
-def get_annotation(text):
+def global_posts(page):
+    """Global related posts
     """
-    Extract annotation from text (first N lines of text)
-
-    :param text: Text for extracting
-    :return: Annotation
-    """
-    return '\n'.join(text.split('\n')[:current_app.config['LINES_FOR_ANNOTATION']])
+    try:
+        g.post_user = User.query.filter_by(username=current_app.config['BRAND']).one().serialize()
+    except NoResultFound:
+        return redirect(url_for('user.sign_up'))
+    post_per_page = current_app.config['POST_PER_PAGE']
+    total_posts = db.session.query(db.func.count(Post.post_id)).scalar() or 0
+    total_pages = ceil(total_posts / post_per_page)
+    if total_pages == 0:
+        total_pages = 1
+    if page < 1 or page > total_pages:
+        raise abort(404)
+    posts = [_.serialize()
+             for _ in Post.query.
+                 order_by(Post.post_id).
+                 offset((page - 1) * post_per_page).
+                 limit(post_per_page).
+                 all()]
+    tags = None
+    if page == 1:
+        tags = [_[0] for _ in db.session.query(PostTag.content).all()]
+    return render_template('post/multiple.html', page=page, total_pages=total_pages, posts=posts, tags=tags)
 
 
 @bp.route('', methods=('GET', ), defaults={'page': 1})
@@ -50,13 +57,7 @@ def posts(page):
         total_pages = 1
     if page < 1 or page > total_pages:
         raise abort(404)
-    user_posts = [{'created': _.created,
-                   'edited': _.edited,
-                   'url': _.url,
-                   'title': _.title,
-                   'content_time': _.content_time,
-                   'content': Markup(markdown2.markdown(get_annotation(_.content))),
-                   'tags': [_.content for _ in PostTag.query.filter_by(post_id=_.post_id).all()]}
+    user_posts = [_.serialize()
                   for _ in Post.query.
                       filter_by(user_id=g.post_user['user_id']).
                       order_by(Post.post_id).
@@ -78,14 +79,7 @@ def post(postname):
 
     :param postname: Postname for show post
     """
-    post = Post.query.filter_by(user_id=g.post_user['user_id'], url=postname).first_or_404()
-    post = {'created': post.created,
-            'edited': post.edited,
-            'url': post.url,
-            'title': post.title,
-            'content_time': post.content_time,
-            'content': Markup(markdown2.markdown(post.content)),
-            'tags': [_.content for _ in PostTag.query.filter_by(post_id=post.post_id)]}
+    post = Post.query.filter_by(user_id=g.post_user['user_id'], url=postname).first_or_404().serialize(True)
     return render_template('post/single.html', post=post)
 
 
@@ -106,13 +100,7 @@ def posts_by_tag(tagname, page):
     total_pages = ceil(total_user_posts / post_per_page)
     if page < 1 or page > total_pages:
         raise abort(404)
-    user_posts = [{'created': _.created,
-                   'edited': _.edited,
-                   'url': _.url,
-                   'title': _.title,
-                   'content_time': _.content_time,
-                   'content': Markup(markdown2.markdown(get_annotation(_.content))),
-                   'tags': [_.content for _ in PostTag.query.filter_by(post_id=_.post_id).all()]}
+    user_posts = [_.serialize()
                   for _ in db.session.query(Post).
                       select_from(PostTag).
                       join(PostTag.post).

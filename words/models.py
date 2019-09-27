@@ -1,6 +1,9 @@
 import enum
 from datetime import datetime
 
+import markdown2
+from flask import Markup, current_app
+
 from words.ext import db
 
 
@@ -35,6 +38,18 @@ class User(db.Model):
         self.username = username
         self.password = password
         self.logotype = logotype
+
+    def serialize(self):
+        """Serialize user-object to pass template engine"""
+        return dict(user_id=self.user_id,
+                    username=self.username,
+                    registered=self.registered,
+                    edited=self.edited,
+                    logotype=self.logotype,
+                    first_name=self.first_name,
+                    last_name=self.last_name,
+                    about=Markup(markdown2.markdown(self.about)),
+                    about_time=self.about_time)
 
 
 class ServiceSubscribe(db.Model):
@@ -73,6 +88,22 @@ class Post(db.Model):
         self.title = title
         self.content = content
         self.content_time = content_time
+
+    def serialize(self, full=False):
+        """Serialize post-object to pass template engine
+
+        :param full: Serialize full content or annotation
+        """
+        return dict(created=self.created,
+                    edited=self.edited,
+                    url=self.url,
+                    title=self.title,
+                    content_time=self.content_time,
+                    content=Markup(markdown2.markdown(
+                        self.content if full else
+                        '\n'.join(self.content.split('\n')[:current_app.config['LINES_FOR_ANNOTATION']])
+                    )),
+                    tags=[_.content for _ in self.post_tags])
 
 
 class PostTag(db.Model):
