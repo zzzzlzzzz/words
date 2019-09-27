@@ -79,8 +79,8 @@ def post(postname):
 
     :param postname: Postname for show post
     """
-    post = Post.query.filter_by(user_id=g.post_user['user_id'], url=postname).first_or_404().serialize(True)
-    return render_template('post/single.html', post=post)
+    user_post = Post.query.filter_by(user_id=g.post_user['user_id'], url=postname).first_or_404().serialize(True)
+    return render_template('post/single.html', post=user_post)
 
 
 @bp.route('tag/<tagname>', methods=('GET', ), defaults={'page': 1})
