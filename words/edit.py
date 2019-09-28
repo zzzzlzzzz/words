@@ -1,5 +1,4 @@
 from datetime import datetime
-import re
 
 from flask import Blueprint, render_template, g, flash, url_for, redirect
 from sqlalchemy.exc import IntegrityError
@@ -10,13 +9,10 @@ from words.models import UserStatus, Post, PostTag
 from words.user import only_for
 from words.forms import ProfileForm, PostForm
 from words.ext import db
-from words.utils import resize_logotype
+from words.utils import resize_logotype, TAG_EXTRACTOR
 
 
 bp = Blueprint('edit', __name__, url_prefix='/edit')
-
-
-TAG_EXTRACTOR = re.compile(r'''#([\w\d_?!]+?)(\s|$)''', re.MULTILINE)
 
 
 @bp.route('profile', methods=('GET', 'POST'))
@@ -38,23 +34,24 @@ def profile():
     return render_template('edit/profile.html', form=form)
 
 
+def generate_url(title):
+    """Generate url for post from post title"""
+    url = title.lower()
+    lang = detect_language(url, fail_silently=True)
+    return translit(url, lang, True) if lang else url
+
+
 @bp.route('post', methods=('GET', 'POST'))
 @only_for(minimal=UserStatus.NORMAL)
 def new_post():
     form = PostForm()
     if form.validate_on_submit():
         title = form.title.data
-        url = title.lower()
-        lang = detect_language(url, fail_silently=True)
-        if lang:
-            url = translit(url, lang, True)
+        url = generate_url(title)
         tags = {_.group(1) for _ in TAG_EXTRACTOR.finditer(form.content.data)}
-        tag_url = '[#\\g<1>]({})\\g<2>'.format(url_for('post.posts_by_tag', username=g.user.username, tagname='tagname').replace('tagname', '\\g<1>'))
-        content_with_tag = TAG_EXTRACTOR.sub(tag_url, form.content.data)
-
-        post = Post(url, title, content_with_tag, readtime.of_markdown(content_with_tag).minutes)
-        for tag in tags:
-            post.post_tags.append(PostTag(tag))
+        content = form.content.data
+        post = Post(url, title, content, readtime.of_markdown(content).minutes)
+        post.post_tags.extend(PostTag(_) for _ in tags)
         g.user.posts.append(post)
         try:
             db.session.commit()
@@ -76,7 +73,24 @@ def edit_post(postname):
     post = Post.query.filter_by(url=postname).first_or_404()
     form = PostForm(title=post.title, content=post.content)
     if form.validate_on_submit():
-        pass    # TODO: set new values here
+        title = form.title.data
+        url = generate_url(title)
+        tags = {_.group(1) for _ in TAG_EXTRACTOR.finditer(form.content.data)}
+        content = form.content.data
+        post.edited = datetime.utcnow()
+        post.url = url
+        post.title = title
+        post.content = content
+        post.content_time = readtime.of_markdown(content).minutes
+        post.post_tags.clear()
+        post.post_tags.extend(PostTag(_) for _ in tags)
+        try:
+            db.session.commit()
+            return redirect(url_for('post.post', username=g.user.username, postname=url))
+        except IntegrityError:
+            flash('This title already exists. Please, enter another title.', 'warning')
+            db.session.rollback()
+
     return render_template('edit/post.html',
                            form=form,
                            created=post.created,

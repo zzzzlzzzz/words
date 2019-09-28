@@ -37,7 +37,7 @@ def global_posts(page):
                  all()]
     tags = None
     if page == 1:
-        tags = [_[0] for _ in db.session.query(PostTag.content).all()]
+        tags = [_[0] for _ in db.session.query(PostTag.content).all()]  # TODO: maybe in feature need limit this query
     return render_template('post/multiple.html', page=page, total_pages=total_pages, posts=posts, tags=tags)
 
 

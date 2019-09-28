@@ -3,6 +3,7 @@ from os import path, listdir
 from io import BytesIO
 from base64 import b64encode
 import warnings
+import re
 
 from flask import current_app
 from PIL import Image, ImageDraw, ImageFont
@@ -54,3 +55,6 @@ def resize_logotype(fp):
         return 'data:image/jpg;base64,{}'.format(b64encode(logotype_buffer.getvalue()).decode('utf8'))
     except (IOError, Image.DecompressionBombError):
         raise ValueError()
+
+
+TAG_EXTRACTOR = re.compile(r'''#([\w\d_?!]+?)(\s|$)''', re.MULTILINE)

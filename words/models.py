@@ -2,9 +2,10 @@ import enum
 from datetime import datetime
 
 import markdown2
-from flask import Markup, current_app
+from flask import Markup, current_app, url_for
 
 from words.ext import db
+from words.utils import TAG_EXTRACTOR
 
 
 class UserStatus(enum.Enum):
@@ -94,15 +95,18 @@ class Post(db.Model):
 
         :param full: Serialize full content or annotation
         """
+        tag_url = r'''[#\g<1>]({})\g<2>'''.\
+            format(url_for('post.posts_by_tag', username=self.user.username, tagname='tagname').
+                   replace('tagname', '\\g<1>'))
         return dict(created=self.created,
                     edited=self.edited,
                     url=self.url,
                     title=self.title,
                     content_time=self.content_time,
-                    content=Markup(markdown2.markdown(
+                    content=Markup(markdown2.markdown(TAG_EXTRACTOR.sub(tag_url,
                         self.content if full else
                         '\n'.join(self.content.split('\n')[:current_app.config['LINES_FOR_ANNOTATION']])
-                    )),
+                    ))),
                     tags=[_.content for _ in self.post_tags])
 
 
