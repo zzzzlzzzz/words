@@ -42,8 +42,7 @@ class User(db.Model):
 
     def serialize(self):
         """Serialize user-object to pass template engine"""
-        return dict(user_id=self.user_id,
-                    username=self.username,
+        return dict(username=self.username,
                     registered=self.registered,
                     edited=self.edited,
                     logotype=self.logotype,

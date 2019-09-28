@@ -12,7 +12,8 @@ bp = Blueprint('post', __name__, url_prefix='/user/<username>')
 
 @bp.url_value_preprocessor
 def pull_user(endpoint, values):
-    g.post_user = User.query.filter_by(username=values.pop('username')).first_or_404().serialize()
+    g.post_user_raw = User.query.filter_by(username=values.pop('username')).first_or_404()
+    g.post_user = g.post_user_raw.serialize()
 
 
 def global_posts(page):
@@ -50,7 +51,7 @@ def posts(page):
     """
     post_per_page = current_app.config['POST_PER_PAGE']
     total_user_posts = db.session.query(db.func.count(Post.post_id)).\
-                           filter_by(user_id=g.post_user['user_id']).\
+                           filter_by(user_id=g.post_user_raw.user_id).\
                            scalar() or 0
     total_pages = ceil(total_user_posts / post_per_page)
     if total_pages == 0:
@@ -59,7 +60,7 @@ def posts(page):
         raise abort(404)
     user_posts = [_.serialize()
                   for _ in Post.query.
-                      filter_by(user_id=g.post_user['user_id']).
+                      filter_by(user_id=g.post_user_raw.user_id).
                       order_by(Post.post_id).
                       offset((page - 1) * post_per_page).
                       limit(post_per_page).
@@ -68,7 +69,7 @@ def posts(page):
     if page == 1:
         user_tags = [_[0] for _ in db.session.query(PostTag.content).
             join(PostTag.post).
-            filter(Post.user_id == g.post_user['user_id']).
+            filter(Post.user_id == g.post_user_raw.user_id).
             all()]
     return render_template('post/multiple.html', page=page, total_pages=total_pages, posts=user_posts, tags=user_tags)
 
@@ -79,7 +80,7 @@ def post(postname):
 
     :param postname: Postname for show post
     """
-    user_post = Post.query.filter_by(user_id=g.post_user['user_id'], url=postname).first_or_404().serialize(True)
+    user_post = Post.query.filter_by(user_id=g.post_user_raw.user_id, url=postname).first_or_404().serialize(True)
     return render_template('post/single.html', post=user_post)
 
 
@@ -95,7 +96,7 @@ def posts_by_tag(tagname, page):
     total_user_posts = db.session.query(db.func.count(Post.post_id)).\
                            select_from(PostTag).\
                            join(PostTag.post).\
-                           filter(Post.user_id == g.post_user['user_id'], PostTag.content == tagname).\
+                           filter(Post.user_id == g.post_user_raw.user_id, PostTag.content == tagname).\
                            scalar() or 0
     total_pages = ceil(total_user_posts / post_per_page)
     if page < 1 or page > total_pages:
@@ -104,7 +105,7 @@ def posts_by_tag(tagname, page):
                   for _ in db.session.query(Post).
                       select_from(PostTag).
                       join(PostTag.post).
-                      filter(Post.user_id == g.post_user['user_id'], PostTag.content == tagname).
+                      filter(Post.user_id == g.post_user_raw.user_id, PostTag.content == tagname).
                       order_by(Post.post_id).
                       offset((page - 1) * post_per_page).
                       limit(post_per_page).
