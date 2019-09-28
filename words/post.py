@@ -20,9 +20,10 @@ def global_posts(page):
     """Global related posts
     """
     try:
-        g.post_user = User.query.filter_by(username=current_app.config['BRAND']).one().serialize()
+        g.post_user_raw = User.query.filter_by(username=current_app.config['BRAND']).one()
     except NoResultFound:
         return redirect(url_for('user.sign_up'))
+    g.post_user = g.post_user_raw.serialize()
     post_per_page = current_app.config['POST_PER_PAGE']
     total_posts = db.session.query(db.func.count(Post.post_id)).scalar() or 0
     total_pages = ceil(total_posts / post_per_page)
