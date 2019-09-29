@@ -82,38 +82,38 @@ def strip_html(source):
     return ' '.join(ElementTree(file=BytesIO('<body>{}</body>'.format(source).encode('utf8'))).getroot().itertext())
 
 
-@bp.route('/feed', methods=('GET', ))
-def posts_feed():
-    """View for RSS (Return POST_PER_PAGE posts)"""
-    user_posts = [_.serialize()
-                  for _ in Post.query.
-                      filter_by(user_id=g.post_user_raw.user_id).
-                      order_by(Post.post_id.desc()).
-                      limit(current_app.config['POST_PER_PAGE']).
-                      all()]
+def get_feed(page_link, self_link, user_root_raw, user_posts_raw):
+    """Generate RSS feed using as source user_root_raw and user_posts_raw
 
+    :param page_link: Link to resource index
+    :param self_link: link to this view
+    :param user_root_raw: User for using as root
+    :param user_posts_raw: Posts for using as source
+    """
+    user_root = user_root_raw.serialize()
     rss = Element('rss', {'version': '2.0',
-                          'xmlns:atom': 'http://www.w3.org/2005/Atom',})
+                          'xmlns:atom': 'http://www.w3.org/2005/Atom', })
     channel = SubElement(rss, 'channel')
 
     title = SubElement(channel, 'title')
-    title.text = '{} {} {}'.format(g.post_user['first_name'], g.post_user['last_name'], g.post_user['username']).strip()
+    title.text = '{} {} {}'.format(user_root['first_name'], user_root['last_name'], user_root['username']).strip()
     link = SubElement(channel, 'link')
-    link.text = url_for('post.posts', username=g.post_user_raw.username, _external=True)
+    link.text = page_link
     description = SubElement(channel, 'description')
-    description.text = strip_html(str(g.post_user['about']))
+    description.text = strip_html(str(user_root['about']))
     atom_link = SubElement(channel, 'atom:link',
-                           {'href': url_for('post.posts_rss', username=g.post_user_raw.username, _external=True),
+                           {'href': self_link,
                             'rel': 'self',
                             'type': 'application/rss+xml'})
-    if user_posts:
+    if user_posts_raw:
         last_build_date = SubElement(channel, 'lastBuildDate')
-        last_build_date.text = format_datetime(user_posts[0]['edited'])
+        last_build_date.text = format_datetime(user_posts_raw[0].serialize()['edited'])
 
-    for user_post in user_posts:
+    for user_post_raw in user_posts_raw:
+        user_post = user_post_raw.serialize()
         item = SubElement(channel, 'item')
         item_link = SubElement(item, 'link')
-        item_link.text = url_for('post.post', username=g.post_user_raw.username, postname=user_post['url'], _external=True)
+        item_link.text = url_for('post.post', username=user_post_raw.user.username, postname=user_post['url'], _external=True)
         guid = SubElement(item, 'guid')
         guid.text = item_link.text
         item_title = SubElement(item, 'title')
@@ -128,9 +128,31 @@ def posts_feed():
     return buffer_rss.getvalue().decode('utf8'), {'content-type': 'text/xml'}
 
 
+@bp.route('/feed', methods=('GET', ))
+def posts_feed():
+    """View for RSS (Return POST_PER_PAGE posts)"""
+    return get_feed(url_for('post.posts', username=g.post_user['username']),
+                    url_for('post.posts_feed', username=g.post_user['username']),
+                    g.post_user_raw,
+                    Post.query.filter_by(user_id=g.post_user_raw.user_id).
+                    order_by(Post.post_id.desc()).
+                    limit(current_app.config['POST_PER_PAGE']).
+                    all())
+
+
 def global_feed():
     """View for global RSS feed (Return POST_PER_PAGE posts)"""
-    return 'INDEX FEED'
+    try:
+        g.post_user_raw = User.query.filter_by(username=current_app.config['BRAND']).one()
+    except NoResultFound:
+        return redirect(url_for('user.sign_up'))
+    return get_feed(url_for('index'),
+                    url_for('index_feed'),
+                    g.post_user_raw,
+                    Post.query.
+                    order_by(Post.post_id.desc()).
+                    limit(current_app.config['POST_PER_PAGE']).
+                    all())
 
 
 @bp.route('post/<postname>', methods=('GET', ))
