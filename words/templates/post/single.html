@@ -9,11 +9,11 @@
                     {{ utils.post_item_header(post) }}
                     <div class="panel-body">
                         <h1>{{ post.title }}</h1>
-                        {{ post.content }}
+                        {{ post.content_html(True) }}
                     </div>
-                    {% if post.tags %}
+                    {% if post.post_tags %}
                         <div class="panel-footer text-center">
-                            {{ utils.post_item_tags(post.tags) }}
+                            {{ utils.post_item_tags(post) }}
                         </div>
                     {% endif %}
                 </div>

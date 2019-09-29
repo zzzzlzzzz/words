@@ -2,6 +2,7 @@ from random import randint, choice
 from os import path, listdir
 from io import BytesIO
 from base64 import b64encode
+from xml.etree.ElementTree import ElementTree
 import warnings
 import re
 
@@ -58,3 +59,8 @@ def resize_logotype(fp):
 
 
 TAG_EXTRACTOR = re.compile(r'''#([\w\d_?!]+?)(\s|$)''', re.MULTILINE)
+
+
+def html2plain(html):
+    """Convert html text to plain text"""
+    return ' '.join(ElementTree(file=BytesIO('<body>{}</body>'.format(html).encode('utf8'))).getroot().itertext())

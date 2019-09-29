@@ -2,12 +2,12 @@
     <div class="panel-heading">
         <div class="row">
             <div class="col-lg-1 col-md-1 col-sm-1">
-                <img src="{{ g.post_user.logotype }}" alt="logotype" class="post-logotype-small img-circle">
+                <img src="{{ post.user.logotype }}" alt="logotype" class="post-logotype-small img-circle">
             </div>
             <div class="col-lg-11 col-md-11 col-sm-11">
                 <div class="row">
                     <div class="col-lg-12 col-md-12 col-sm-12">
-                        {% if g.post_user.first_name %}{{g.post_user.first_name}} {% endif %}{% if g.post_user.last_name %}{{ g.post_user.last_name }} {% endif %}<a href="{{ url_for('post.posts', username=g.post_user.username) }}">@{{ g.post_user.username }}</a>
+                        {% if post.user.first_name %}{{post.user.first_name}} {% endif %}{% if post.user.last_name %}{{ post.user.last_name }} {% endif %}<a href="{{ url_for('post.posts', username=post.user.username) }}">@{{ post.user.username }}</a>
                     </div>
                 </div>
                 <div class="row">
@@ -17,7 +17,7 @@
                     <div class="col-lg-4 col-md-4 col-sm-4">
                         Edited: {{ moment(post.edited).fromNow() }}
                     </div>
-                    {% if g.user and g.user.user_id == g.post_user_raw.user_id %}
+                    {% if g.user and g.user.user_id == post.user.user_id %}
                     <div class="col-lg-4 col-md-4 col-sm-4">
                         <a class="btn btn-primary btn-xs pull-right" href="{{ url_for('edit.edit_post', postname=post.url) }}">Edit</a>
                     </div>
@@ -33,9 +33,9 @@
     </div>
 {% endmacro %}
 
-{% macro post_item_tags(post_tags) %}
-    {% for post_tag in post_tags %}
-        <a class="label label-primary" href="{{ url_for('post.posts_by_tag', username=g.post_user.username, tagname=post_tag) }}">{{ post_tag }}</a>
+{% macro post_item_tags(post) %}
+    {% for post_tag in post.post_tags %}
+        <a class="label label-primary" href="{{ url_for('post.posts_by_tag', username=post.user.username, tagname=post_tag.content) }}">{{ post_tag.content }}</a>
     {% endfor %}
 {% endmacro %}
 
@@ -46,14 +46,14 @@
                 {{ post_item_header(post) }}
                 <div class="panel-body">
                     <h2>{{ post.title }}</h2>
-                    {{ post.content }}
+                    {{ post.content_html() }}
                 </div>
                 <div class="panel-footer text-center">
-                    {% if post.tags %}
-                        {{ post_item_tags(post.tags) }}
+                    {% if post.post_tags %}
+                        {{ post_item_tags(post) }}
                         <hr/>
                     {% endif %}
-                    <a href="{{ url_for('post.post', username=g.post_user.username, postname=post.url) }}">more</a>
+                    <a href="{{ url_for('post.post', username=post.user.username, postname=post.url) }}">more</a>
                 </div>
             </div>
         </div>

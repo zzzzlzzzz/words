@@ -5,7 +5,7 @@ import markdown2
 from flask import Markup, current_app, url_for
 
 from words.ext import db
-from words.utils import TAG_EXTRACTOR
+from words.utils import TAG_EXTRACTOR, html2plain
 
 
 class UserStatus(enum.Enum):
@@ -40,16 +40,11 @@ class User(db.Model):
         self.password = password
         self.logotype = logotype
 
-    def serialize(self):
-        """Serialize user-object to pass template engine"""
-        return dict(username=self.username,
-                    registered=self.registered,
-                    edited=self.edited,
-                    logotype=self.logotype,
-                    first_name=self.first_name,
-                    last_name=self.last_name,
-                    about=Markup(markdown2.markdown(self.about)),
-                    about_time=self.about_time)
+    def about_html(self):
+        return Markup(markdown2.markdown(self.about))
+
+    def about_plain(self):
+        return html2plain(str(self.about_html()))
 
 
 class ServiceSubscribe(db.Model):
@@ -89,24 +84,19 @@ class Post(db.Model):
         self.content = content
         self.content_time = content_time
 
-    def serialize(self, full=False):
-        """Serialize post-object to pass template engine
-
-        :param full: Serialize full content or annotation
-        """
+    def content_html(self, full=False):
         tag_url = r'''[#\g<1>]({})\g<2>'''.\
             format(url_for('post.posts_by_tag', username=self.user.username, tagname='tagname').
                    replace('tagname', '\\g<1>'))
-        return dict(created=self.created,
-                    edited=self.edited,
-                    url=self.url,
-                    title=self.title,
-                    content_time=self.content_time,
-                    content=Markup(markdown2.markdown(TAG_EXTRACTOR.sub(tag_url,
-                        self.content if full else
-                        '\n'.join(self.content.split('\n')[:current_app.config['LINES_FOR_ANNOTATION']])
-                    ))),
-                    tags=[_.content for _ in self.post_tags])
+        return Markup(
+            markdown2.markdown(
+                TAG_EXTRACTOR.sub(tag_url,
+                                  self.content if full
+                                  else '\n'.join(self.content.split('\n')[:current_app.config['LINES_FOR_ANNOTATION']])
+                                  )))
+
+    def content_plain(self, full=False):
+        return html2plain(str(self.content_html(full)))
 
 
 class PostTag(db.Model):
