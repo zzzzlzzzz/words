@@ -36,7 +36,7 @@ def global_posts(page):
         raise abort(404)
     posts = [_.serialize()
              for _ in Post.query.
-                 order_by(Post.post_id).
+                 order_by(Post.post_id.desc()).
                  offset((page - 1) * post_per_page).
                  limit(post_per_page).
                  all()]
@@ -65,7 +65,7 @@ def posts(page):
     user_posts = [_.serialize()
                   for _ in Post.query.
                       filter_by(user_id=g.post_user_raw.user_id).
-                      order_by(Post.post_id).
+                      order_by(Post.post_id.desc()).
                       offset((page - 1) * post_per_page).
                       limit(post_per_page).
                       all()]
@@ -187,7 +187,7 @@ def posts_by_tag(tagname, page):
                       select_from(PostTag).
                       join(PostTag.post).
                       filter(Post.user_id == g.post_user_raw.user_id, PostTag.content == tagname).
-                      order_by(Post.post_id).
+                      order_by(Post.post_id.desc()).
                       offset((page - 1) * post_per_page).
                       limit(post_per_page).
                       all()]
