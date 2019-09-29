@@ -31,6 +31,8 @@ def create_app():
     app.add_url_rule('/', 'index', post.global_posts, methods=('GET', ), defaults={'page': 1})
     app.add_url_rule('/<int:page>', 'index', post.global_posts, methods=('GET', ))
     app.add_url_rule('/user/{}'.format(app.config['BRAND']), 'user_brand', lambda: redirect(url_for('index'), 301), methods=('GET', ))
+    app.add_url_rule('/feed', 'index_feed', post.global_feed, methods=('GET', ))
+    app.add_url_rule('/user/{}/feed'.format(app.config['BRAND']), 'user_brand_feed', lambda: redirect(url_for('index_feed'), 301), methods=('GET', ))
     app.register_error_handler(Exception, error.page_500)
     app.register_error_handler(500, error.page_500)
     app.register_error_handler(CSRFError, error.page_400)
