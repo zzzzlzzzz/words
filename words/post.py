@@ -33,9 +33,7 @@ def global_posts(page):
     if page < 1 or page > total_pages:
         raise abort(404)
     user_posts = Post.query.order_by(Post.post_id.desc()).offset((page - 1) * post_per_page).limit(post_per_page).all()
-    tags = None
-    if page == 1:
-        tags = [_[0] for _ in db.session.query(PostTag.content).all()]  # TODO: maybe in feature need limit this query
+    tags = [_[0] for _ in db.session.query(PostTag.content).all()] if page == 1 else None   # TODO: maybe in feature need limit this query
     return render_template('post/multiple.html', page=page, total_pages=total_pages, posts=user_posts, tags=tags)
 
 
@@ -61,12 +59,11 @@ def posts(page):
         offset((page - 1) * post_per_page).\
         limit(post_per_page).\
         all()
-    user_tags = None
-    if page == 1:
-        user_tags = [_[0] for _ in db.session.query(PostTag.content).
-            join(PostTag.post).
-            filter(Post.user_id == g.post_user.user_id).
-            all()]
+    user_tags = [_[0]
+                 for _ in db.session.query(PostTag.content).
+                     join(PostTag.post).
+                     filter(Post.user_id == g.post_user.user_id).
+                     all()] if page == 1 else None
     return render_template('post/multiple.html', page=page, total_pages=total_pages, posts=user_posts, tags=user_tags)
 
 
@@ -87,10 +84,10 @@ def get_feed(page_link, self_link, user_posts):
     link.text = page_link
     description = SubElement(channel, 'description')
     description.text = g.post_user.about_plain()
-    atom_link = SubElement(channel, 'atom:link',
-                           {'href': self_link,
-                            'rel': 'self',
-                            'type': 'application/rss+xml'})
+    SubElement(channel, 'atom:link',
+               {'href': self_link,
+                'rel': 'self',
+                'type': 'application/rss+xml'})
     if user_posts:
         last_build_date = SubElement(channel, 'lastBuildDate')
         last_build_date.text = format_datetime(user_posts[0].edited)

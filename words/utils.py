@@ -63,4 +63,5 @@ TAG_EXTRACTOR = re.compile(r'''#([\w\d_?!]+?)(\s|$)''', re.MULTILINE)
 
 def html2plain(html):
     """Convert html text to plain text"""
-    return ' '.join(ElementTree(file=BytesIO('<body>{}</body>'.format(html).encode('utf8'))).getroot().itertext())
+    return ' '.join(ElementTree(file=BytesIO('<body>{}</body>'.format(html).encode('utf8'))).getroot().itertext()).\
+        strip()
