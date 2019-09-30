@@ -176,3 +176,72 @@ def posts_by_tag(tagname, page):
         limit(post_per_page).\
         all()
     return render_template('post/multiple-tag.html', tag=tagname, page=page, total_pages=total_pages, posts=user_posts)
+
+
+@bp.route('/sitemap.xml', methods=('GET', ))
+def posts_sitemap():
+    post_per_page = current_app.config['POST_PER_PAGE']
+
+    url_set = Element('urlset', {'xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9', })
+
+    root_total_posts = db.session.query(db.func.count(Post.post_id)).\
+                           filter_by(user_id=g.post_user.user_id).\
+                           scalar() or 0
+    root_total_pages = ceil(root_total_posts / post_per_page)
+    root_url = SubElement(url_set, 'url')
+    root_url_loc = SubElement(root_url, 'loc')
+    root_url_loc.text = url_for('post.posts', username=g.post_user.username, _external=True)
+    for page in range(2, root_total_pages):
+        root_url_page = SubElement(url_set, 'url')
+        root_url_page_loc = SubElement(root_url_page, 'loc')
+        root_url_page_loc.text = url_for('post.posts', username=g.post_user.username, page=page, _external=True)
+
+    tag_query = db.session.query(PostTag.content).\
+        join(PostTag.post).\
+        filter(Post.user_id == g.post_user.user_id).\
+        group_by(PostTag.content)
+    for tag, in tag_query.all():
+        tag_total_posts = db.session.query(db.func.count(Post.post_id)).\
+                              select_from(PostTag).\
+                              join(PostTag.post).\
+                              filter(Post.user_id == g.post_user.user_id, PostTag.content == tag).\
+                              scalar() or 0
+        tag_total_pages = ceil(tag_total_posts / post_per_page)
+        tag_url = SubElement(url_set, 'url')
+        tag_url_loc = SubElement(tag_url, 'loc')
+        tag_url_loc.text = url_for('post.posts_by_tag', username=g.post_user.username, tagname=tag, _external=True)
+        for page in range(2, tag_total_pages):
+            tag_url_page = SubElement(url_set, 'url')
+            tag_url_page_loc = SubElement(tag_url_page, 'loc')
+            tag_url_page_loc.text = url_for('post.posts_by_tag', username=g.post_user.username, tagname=tag, page=page, _external=True)
+
+    for user_post in Post.query.filter_by(user_id=g.post_user.user_id).order_by(Post.post_id.desc()).all():
+        post_url = SubElement(url_set, 'url')
+        post_url_loc = SubElement(post_url, 'loc')
+        post_url_loc.text = url_for('post.post', username=g.post_user.username, postname=user_post.url, _external=True)
+        post_url_lastmod = SubElement(post_url, 'lastmod')
+        post_url_lastmod.text = user_post.edited.strftime('%Y-%m-%dT%H:%M:%S+00:00')
+
+    buffer_sitemap = BytesIO()
+    ElementTree(url_set).write(buffer_sitemap, 'UTF-8', True)
+    return buffer_sitemap.getvalue().decode('utf8'), {'content-type': 'text/xml'}
+
+
+def global_sitemap():
+    """Global sitemap.xml for global level"""
+    sitemap_index = Element('sitemapindex', {'xmlns': 'http://www.sitemaps.org/schemas/sitemap/0.9', })
+    for user in User.query.filter(User.username != current_app.config['BRAND']).all():
+        sitemap = SubElement(sitemap_index, 'sitemap')
+        sitemap_loc = SubElement(sitemap, 'loc')
+        sitemap_loc.text = url_for('post.posts_sitemap', username=user.username, _external=True)
+        sitemap_lastmod = SubElement(sitemap, 'lastmod')
+        last_edited = db.session.query(Post.edited).\
+                          filter_by(user_id=user.user_id).\
+                          order_by(Post.post_id.desc()).\
+                          limit(1).\
+                          scalar() or user.edited
+        sitemap_lastmod.text = last_edited.strftime('%Y-%m-%dT%H:%M:%S+00:00')
+
+    buffer_sitemap = BytesIO()
+    ElementTree(sitemap_index).write(buffer_sitemap, 'UTF-8', True)
+    return buffer_sitemap.getvalue().decode('utf8'), {'content-type': 'text/xml'}
