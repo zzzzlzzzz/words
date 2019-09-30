@@ -19,18 +19,16 @@ def pull_user(endpoint, values):
 
 
 def pull_user_global():
-    """Pull global user by brand-name
-
-    :return: True, if user exists; False otherwise
-    """
-    g.post_user = User.query.filter_by(username=current_app.config['BRAND']).first()
-    return g.post_user is not None
+    """Pull global user by brand-name"""
+    g.post_user = User.query.filter_by(username=current_app.config['BRAND']).one()
 
 
 def global_posts(page):
     """Global related posts
     """
-    if not pull_user_global():
+    try:
+        pull_user_global()
+    except NoResultFound:
         return redirect(url_for('user.sign_up'))
     post_per_page = current_app.config['POST_PER_PAGE']
     total_posts = db.session.query(db.func.count(Post.post_id)).scalar() or 0
@@ -130,7 +128,9 @@ def posts_feed():
 
 def global_feed():
     """View for global RSS feed (Return POST_PER_PAGE posts)"""
-    if not pull_user_global():
+    try:
+        pull_user_global()
+    except NoResultFound:
         return redirect(url_for('user.sign_up'))
     return get_feed(url_for('index', _external=True),
                     url_for('index_feed', _external=True),
