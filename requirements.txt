@@ -13,3 +13,4 @@ python-magic>=0.4.15
 markdown2>=2.3.8
 readtime>=1.1.1
 transliterate>=1.10.2
+celery>=4.3.0

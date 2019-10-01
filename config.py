@@ -1,4 +1,5 @@
 from os import environ
+import re
 
 
 class Config:
@@ -11,6 +12,17 @@ class Config:
     BRAND = environ.get('WORDS_BRAND', 'world')
     POST_PER_PAGE = environ.get('WORDS_POST_PER_PAGE', 3)
     LINES_FOR_ANNOTATION = environ.get('WORDS_LINES_PER_ANNOTATION', 3)
+    CELERY = dict(
+        broker_url=environ.get('WORDS_CELERY_BROKER_URL', ''),
+        broker_connection_max_retries=None,
+        worker_max_memory_per_child=256 * 1024,
+        task_default_queue='default',
+        task_routes={
+            'words.tasks.repost.*': {
+                'queue': 'repost',
+            },
+        },
+    )
 
 
 class DevelopmentConfig(Config):

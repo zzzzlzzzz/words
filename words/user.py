@@ -111,3 +111,5 @@ def change_password():
         else:
             flash('Invalid credentials', 'danger')
     return render_template('user/base.html', form=form, form_title='Change password')
+
+# TODO: Add UI for subscribe management (list all subscribes with delete action, edit subscribes, add subscribes)

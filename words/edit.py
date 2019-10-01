@@ -8,7 +8,7 @@ from transliterate import translit, detect_language
 from words.models import UserStatus, Post, PostTag
 from words.user import only_for
 from words.forms import ProfileForm, PostForm
-from words.ext import db
+from words.ext import db, celery
 from words.utils import resize_logotype, TAG_EXTRACTOR
 
 
@@ -55,7 +55,9 @@ def new_post():
         g.user.posts.append(post)
         try:
             db.session.commit()
-            return redirect(url_for('post.post', username=g.user.username, postname=url))
+            post_url = url_for('post.post', username=g.user.username, postname=url)
+            celery.send_task('words.tasks.repost.all', (post.post_id, post_url))
+            return redirect(post_url)
         except IntegrityError:
             flash('This title already exists. Please, enter another title.', 'warning')
             db.session.rollback()

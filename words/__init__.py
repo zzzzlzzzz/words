@@ -6,7 +6,7 @@ from flask_bootstrap import WebCDN
 
 from words.ext import db, csrf, bootstrap, app_bcrypt, moment
 from words.models import UserStatus
-from words import user, edit, post, error
+from words import user, edit, post, error, tasks
 
 
 def create_app():
@@ -18,6 +18,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(environ.get('WORDS_CONFIG', 'config.DevelopmentConfig'))
     db.init_app(app)
+    tasks.init_app(app)
     csrf.init_app(app)
     bootstrap.init_app(app)
     app.extensions['bootstrap']['cdns'].update({'simplemde-css': WebCDN('//cdn.jsdelivr.net/simplemde/latest/'),
