@@ -4,9 +4,9 @@ from urllib.parse import urlparse
 from sqlalchemy.exc import IntegrityError
 from flask import Blueprint, render_template, flash, session, redirect, url_for, g, abort, request
 
-from words.forms import SignUpForm, SignInForm, PasswordChangeForm
+from words.forms import SignUpForm, SignInForm, PasswordChangeForm, service_forms
 from words.utils import generate_logotype
-from words.models import User, UserStatus
+from words.models import User, UserStatus, Service, ServiceSubscribe
 from words.ext import db, app_bcrypt
 
 
@@ -68,7 +68,7 @@ def sign_up():
         except IntegrityError:
             flash('This username already registered. Think better and try again.', 'danger')
             db.session.rollback()
-    return render_template('user/base.html', form=form, form_title='Sign Up')
+    return render_template('user/forms.html', form=form, form_title='Sign Up')
 
 
 @bp.route('sign-in', methods=('GET', 'POST', ))
@@ -87,7 +87,7 @@ def sign_in():
                 return redirect(url_for('post.posts', username=user.username))
         else:
             flash('Invalid credentials', 'danger')
-    return render_template('user/base.html', form=form, form_title='Sign In')
+    return render_template('user/forms.html', form=form, form_title='Sign In')
 
 
 @bp.route('sign-out', methods=('GET', ))
@@ -110,6 +110,40 @@ def change_password():
             return redirect(url_for('post.posts', username=g.user.username))
         else:
             flash('Invalid credentials', 'danger')
-    return render_template('user/base.html', form=form, form_title='Change password')
+    return render_template('user/forms.html', form=form, form_title='Change password')
 
-# TODO: Add UI for subscribe management (list all subscribes with delete action, edit subscribes, add subscribes)
+
+@bp.route('service', methods=('GET', ))
+@only_for(minimal=UserStatus.NORMAL)
+def service_all():
+    return render_template('user/services.html')
+
+
+@bp.route('service/new/<service_name>', methods=('GET', 'POST', ))
+@only_for(minimal=UserStatus.NORMAL)
+def service_new(service_name):
+    """Add service to reposting"""
+    try:
+        service = Service[service_name.upper()].name
+    except KeyError:
+        raise abort(404)
+    form = service_forms[service]()
+    form.back.href = url_for('user.service_all')
+    if form.validate_on_submit():
+        g.user.service_subscribes.append(ServiceSubscribe(service, form.dump()))
+        db.session.commit()
+        return redirect(url_for('user.service_all'))
+    return render_template('user/forms.html', form=form, form_title='Add {}'.format(service.lower()))
+
+
+@bp.route('service/<int:service_subscribe_id>', methods=('GET', 'POST', ))
+@only_for(minimal=UserStatus.NORMAL)
+def service_edit(service_subscribe_id):
+    service = ServiceSubscribe.query.get_or_404(service_subscribe_id)
+    form = service_forms[service.service](**service.credentials)
+    form.back.href = url_for('user.service_all')
+    if form.validate_on_submit():
+        service.credentials = form.dump()
+        db.session.commit()
+        return redirect(url_for('user.service_all'))
+    return render_template('user/forms.html', form=form, form_title='Edit {}'.format(service.service.lower()))
