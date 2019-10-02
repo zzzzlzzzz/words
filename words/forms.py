@@ -111,9 +111,9 @@ class TwitterServiceForm(FlaskForm):
     def dump(self):
         """Dump form data for store to database"""
         return dict(consumer_key=self.consumer_key.data,
-                    consumer_secret=self.consumer_secret,
-                    access_token_key=self.access_token_key,
-                    access_token_secret=self.access_token_secret, )
+                    consumer_secret=self.consumer_secret.data,
+                    access_token_key=self.access_token_key.data,
+                    access_token_secret=self.access_token_secret.data, )
 
 
 service_forms = {
