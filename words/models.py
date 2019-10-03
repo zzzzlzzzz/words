@@ -16,7 +16,7 @@ class UserStatus(enum.Enum):
 
 class Service(enum.Enum):
     TELEGRAM = 1
-    TWITTER = 2
+#   TWITTER = 2
 
 
 class User(db.Model):
