@@ -30,7 +30,7 @@ def repost(self, post_id, post_url):
 
 def telegram(self, service_id, post_id, post_url):
     try:
-        service = ServiceSubscribe.query.filter_by(service_subscribe_id=service_id).one()
+        service = ServiceSubscribe.query.filter_by(service_subscribe_id=service_id, alive=True).one()
         post = Post.query.filter_by(post_id=post_id).one()
         bot = Bot(current_app.config['TELEGRAM_BOT_TOKEN'],
                   request=Request(proxy_url=current_app.config['TELEGRAM_BOT_PROXY']))
