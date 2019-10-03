@@ -51,6 +51,7 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('service', sa.String(length=32), nullable=False),
     sa.Column('credentials', sa.JSON(), nullable=False),
+    sa.Column('alive', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['user.user_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('service_subscribe_id')
     )

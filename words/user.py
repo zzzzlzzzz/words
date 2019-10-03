@@ -157,6 +157,7 @@ def service_edit(service_subscribe_id):
     form.back.href = url_for('user.service_all')
     if form.validate_on_submit():
         service.credentials = form.dump()
+        service.alive = True
         db.session.commit()
         return redirect(url_for('user.service_all'))
     return render_template('user/forms.html', form=form, form_title='Edit {}'.format(service.service.lower()))

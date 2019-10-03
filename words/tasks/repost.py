@@ -7,6 +7,7 @@ from telegram.error import BadRequest, Unauthorized
 from telegram.utils.request import Request
 
 from words.models import Post, ServiceSubscribe, Service
+from words.ext import db
 
 
 logger = get_task_logger(__name__)
@@ -15,7 +16,7 @@ logger = get_task_logger(__name__)
 def repost(self, post_id, post_url):
     try:
         post = Post.query.filter_by(post_id=post_id).one()
-        for services in ServiceSubscribe.query.filter_by(user_id=post.user_id).all():
+        for services in ServiceSubscribe.query.filter_by(user_id=post.user_id, alive=True).all():
             if services.service == Service.TELEGRAM.name:
                 self.app.send_task('words.tasks.repost.telegram', (services.service_subscribe_id, post_id, post_url))
             elif services.service == Service.TWITTER.name:
@@ -33,10 +34,14 @@ def telegram(self, service_id, post_id, post_url):
         post = Post.query.filter_by(post_id=post_id).one()
         bot = Bot(current_app.config['TELEGRAM_BOT_TOKEN'],
                   request=Request(proxy_url=current_app.config['TELEGRAM_BOT_PROXY']))
-        bot.send_message(service.credentials['channel_name'],
-                         '*{}*\n\n{}'.format(post.title, post_url),
-                         ParseMode.MARKDOWN)
-    except (NoResultFound, BadRequest, Unauthorized):
+        try:
+            bot.send_message(service.credentials['channel_name'],
+                             '*{}*\n\n{}'.format(post.title, post_url),
+                             ParseMode.MARKDOWN)
+        except (BadRequest, Unauthorized):
+            service.alive = False
+            db.session.commit()
+    except NoResultFound:
         pass
     except (SQLAlchemyError, TelegramError) as e:
         logger.exception('telegram')

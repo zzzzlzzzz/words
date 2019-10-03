@@ -56,6 +56,7 @@ class ServiceSubscribe(db.Model):
     user = db.relationship('User', back_populates='service_subscribes')
     service = db.Column(db.String(32), nullable=False)
     credentials = db.Column(db.JSON, nullable=False)
+    alive = db.Column(db.Boolean, nullable=False, default=True)
 
     def __init__(self, service, credentials):
         self.service = service

@@ -33,6 +33,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Account</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -41,8 +42,9 @@
                                         <tr>
                                             <td>{{ service.service_subscribe_id }}</td>
                                             <td>{{ service.service|lower }}</td>
+                                            <td>{% if service.alive %}<span class="label label-primary">Alive</span>{% else %}<span class="label label-default">Died</span>{% endif %}</td>
                                             <td>
-                                                <a type="button" class="btn btn-xs btn-warning" href="{{ url_for('user.service_edit', service_subscribe_id=service.service_subscribe_id) }}">Edit</a>
+                                                <a type="button" class="btn btn-xs btn-warning" href="{{ url_for('user.service_edit', service_subscribe_id=service.service_subscribe_id) }}">{{ utils.icon('edit') }} Edit</a>
                                                 <form style="display: inline;" action="{{ url_for('user.service_delete', service_id=service.service_subscribe_id) }}" method="post">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                     <button class="btn btn-xs btn-danger">{{ utils.icon('remove') }} Remove</button>
