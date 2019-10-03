@@ -116,10 +116,23 @@ def change_password():
 @bp.route('service', methods=('GET', ))
 @only_for(minimal=UserStatus.NORMAL)
 def service_all():
-    return render_template('user/services.html')
+    """Show all user service to reposting"""
+    return render_template('user/services.html', services=g.user.service_subscribes, Service=Service)
 
 
-@bp.route('service/new/<service_name>', methods=('GET', 'POST', ))
+@bp.route('service/delete/<int:service_id>', methods=('POST', ))
+@only_for(minimal=UserStatus.NORMAL)
+def service_delete(service_id):
+    """Delete service from reposting"""
+    if ServiceSubscribe.query.filter_by(user_id=g.user.user_id, service_subscribe_id=service_id).delete():
+        db.session.commit()
+    else:
+        flash('Service ID is invalid', 'danger')
+        db.session.rollback()
+    return redirect(url_for('user.service_all'))
+
+
+@bp.route('service/create/<service_name>', methods=('GET', 'POST', ))
 @only_for(minimal=UserStatus.NORMAL)
 def service_new(service_name):
     """Add service to reposting"""

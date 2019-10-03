@@ -1,11 +1,61 @@
 {% extends 'user/base.html' %}
 
+{% import 'bootstrap/utils.html' as utils %}
+
 {% block title %}Services{% endblock %}
 
 {% block content %}
     <div class="container">
         <div class="row">
-            
+            <div class="center-block col-lg-4 col-md-5 col-sm-6 user-col">
+                <div class="user-card">
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12">
+                            {{ utils.flashed_messages(container=False) }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="text-center col-lg-12 col-md-12 col-sm-12">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Add <span class="caret"></span></button>
+                                <ul class="dropdown-menu">
+                                    {% for service in Service %}
+                                        <li><a href="{{ url_for('user.service_new', service_name=service.name|lower) }}">{{ service.name|lower }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Account</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for service in services %}
+                                        <tr>
+                                            <td>{{ service.service_subscribe_id }}</td>
+                                            <td>{{ service.service|lower }}</td>
+                                            <td>
+                                                <a type="button" class="btn btn-xs btn-warning" href="{{ url_for('user.service_edit', service_subscribe_id=service.service_subscribe_id) }}">Edit</a>
+                                                <form style="display: inline;" action="{{ url_for('user.service_delete', service_id=service.service_subscribe_id) }}" method="post">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <button class="btn btn-xs btn-danger">{{ utils.icon('remove') }} Remove</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
