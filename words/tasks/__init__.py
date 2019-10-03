@@ -18,6 +18,13 @@ def repost_all(self, post_id, post_url):
     repost.repost(self, post_id, post_url)
 
 
-@celery.task(name='words.tasks.repost.telegram', bind=True, ignore_result=True, max_retries=3, default_retry_delay=2 * 60)
+@celery.task(name='words.tasks.repost.telegram', bind=True, ignore_result=True, max_retries=3,
+             default_retry_delay=2 * 60, rate_limit='30/s')
 def repost_telegram(self, service_id, post_id, post_url):
     repost.telegram(self, service_id, post_id, post_url)
+
+
+@celery.task(name='words.tasks.repost.twitter', bind=True, ignore_result=True, max_retries=3,
+             default_retry_delay=2 * 60)
+def repost_twitter(self, service_id, post_id, post_url):
+    repost.twitter(self, service_id, post_id, post_url)

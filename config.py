@@ -12,14 +12,22 @@ class Config:
     BRAND = environ.get('WORDS_BRAND', 'world')
     POST_PER_PAGE = environ.get('WORDS_POST_PER_PAGE', 3)
     LINES_FOR_ANNOTATION = environ.get('WORDS_LINES_PER_ANNOTATION', 3)
+    TELEGRAM_BOT_TOKEN = environ.get('WORDS_TELEGRAM_BOT_TOKEN', '')
+    TELEGRAM_BOT_PROXY = environ.get('WORDS_TELEGRAM_BOT_PROXY', None)
     CELERY = dict(
         broker_url=environ.get('WORDS_CELERY_BROKER_URL', ''),
         broker_connection_max_retries=None,
         worker_max_memory_per_child=256 * 1024,
         task_default_queue='default',
         task_routes={
-            'words.tasks.repost.*': {
-                'queue': 'repost',
+            'words.tasks.repost.all': {
+                'queue': 'repost_all',
+            },
+            'words.tasks.repost.telegram': {    # Warning! Run queue with -c=1
+                'queue': 'repost_telegram',
+            },
+            'words.tasks.repost.twitter': {
+                'queue': 'repost_twitter',
             },
         },
     )

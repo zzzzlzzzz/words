@@ -38,7 +38,7 @@ def generate_url(title):
     """Generate url for post from post title"""
     url = title.lower()
     lang = detect_language(url, fail_silently=True)
-    return translit(url, lang, True) if lang else url
+    return (translit(url, lang, True) if lang else url).replace(' ', '-')
 
 
 @bp.route('post', methods=('GET', 'POST'))
@@ -55,7 +55,7 @@ def new_post():
         g.user.posts.append(post)
         try:
             db.session.commit()
-            post_url = url_for('post.post', username=g.user.username, postname=url)
+            post_url = url_for('post.post', username=g.user.username, postname=url, _external=True)
             celery.send_task('words.tasks.repost.all', (post.post_id, post_url))
             return redirect(post_url)
         except IntegrityError:
