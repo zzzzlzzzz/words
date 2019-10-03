@@ -6,7 +6,7 @@ from flask_bootstrap import WebCDN
 
 from words.ext import db, csrf, bootstrap, app_bcrypt, moment
 from words.models import UserStatus
-from words import user, edit, post, error, tasks
+from words import user, edit, post, error, tasks, admin
 
 
 def create_app():
@@ -26,6 +26,7 @@ def create_app():
                                                 'infinite-scroll': WebCDN('//unpkg.com/infinite-scroll@3/dist/'), })
     app_bcrypt.init_app(app)
     moment.init_app(app)
+    admin.init_app(app)
     app.register_blueprint(user.bp)
     app.register_blueprint(edit.bp)
     app.register_blueprint(post.bp)

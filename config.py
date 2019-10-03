@@ -13,6 +13,8 @@ class Config:
     LINES_FOR_ANNOTATION = environ.get('WORDS_LINES_PER_ANNOTATION', 3)
     TELEGRAM_BOT_TOKEN = environ.get('WORDS_TELEGRAM_BOT_TOKEN', '')
     TELEGRAM_BOT_PROXY = environ.get('WORDS_TELEGRAM_BOT_PROXY', None)
+    FLASK_ADMIN_SWATCH = 'cerulean'
+    ADMIN_URL = environ.get('WORDS_ADMIN_URL', '/admin')
     CELERY = dict(
         broker_url=environ.get('WORDS_CELERY_BROKER_URL', ''),
         broker_connection_max_retries=None,
