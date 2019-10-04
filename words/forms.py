@@ -71,17 +71,21 @@ var simplemde = new SimpleMDE({{element: document.getElementById("{}"), spellChe
                                                         field.id))
 
 
+class MarkdownField(StringField):
+    widget = MarkdownEditor()
+
+
 class ProfileForm(FlaskForm):
     logotype = FileField('Logotype', [Optional()])
     first_name = StringField('First name', [Optional(), Length(max=32)])
     last_name = StringField('Last name', [Optional(), Length(max=32)])
-    about = StringField('About', [Optional()], widget=MarkdownEditor())
+    about = MarkdownField('About', [Optional()])
     submit = SubmitField('Save')
 
 
 class PostForm(FlaskForm):
     title = StringField('Title', [DataRequired(), Length(max=200)])
-    content = StringField('Post', [Length(min=1)], widget=MarkdownEditor())
+    content = MarkdownField('Post', [Length(min=1)])
     submit = SubmitField('Post It')
 
 

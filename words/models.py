@@ -58,7 +58,7 @@ class ServiceSubscribe(db.Model):
     credentials = db.Column(db.JSON, nullable=False)
     alive = db.Column(db.Boolean, nullable=False, default=True)
 
-    def __init__(self, service, credentials):
+    def __init__(self, service=None, credentials=None):
         self.service = service
         self.credentials = credentials
 
