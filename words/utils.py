@@ -52,7 +52,10 @@ def resize_logotype(fp):
         if mime_type not in ['image/jpeg', 'image/pjpeg', 'image/png']:
             raise ValueError()
         logotype_buffer = BytesIO()
-        Image.open(fp).resize((512, 512)).save(logotype_buffer, 'jpeg')
+        src = Image.open(fp).resize((512, 512)).convert('RGBA')
+        dst = Image.new('RGB', src.size, (255, 255, 255))
+        dst.paste(src, mask=src.getchannel('A'))
+        dst.save(logotype_buffer, 'jpeg')
         return 'data:image/jpg;base64,{}'.format(b64encode(logotype_buffer.getvalue()).decode('utf8'))
     except (IOError, Image.DecompressionBombError):
         raise ValueError()
