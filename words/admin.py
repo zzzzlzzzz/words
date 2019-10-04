@@ -2,6 +2,7 @@ from contextlib import suppress
 
 from flask import g, redirect, url_for, flash, request, Markup, escape
 from flask_admin import Admin
+from flask_admin.menu import MenuLink
 from flask_admin.model.form import InlineFormAdmin
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.contrib.sqla.filters import (DateTimeBetweenFilter, DateTimeSmallerFilter, DateTimeGreaterFilter,
@@ -104,3 +105,4 @@ def init_app(app):
     root_url = app.config['ADMIN_URL']
     admin = Admin(app, name='Words', template_mode='bootstrap3',
                   index_view=UserModelView(User, db.session, endpoint='admin', url=root_url, static_folder='static'))
+    admin.add_link(MenuLink('Home', endpoint='index'))

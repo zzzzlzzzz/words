@@ -30,7 +30,7 @@
                                 {% endif %}
                                 {% if UserStatus[g.user.status].value >= UserStatus.ADMINISTRATOR.value %}
                                     <li class="divider"></li>
-                                    <li><a href="#">Some administrator actions...</a></li>
+                                    <li><a href="{{ url_for('admin.index_view') }}">Admin panel</a></li>
                                 {% endif %}
                                 <li class="divider"></li>
                                 <li><a href="{{ url_for('user.service_all') }}">Services</a></li>
