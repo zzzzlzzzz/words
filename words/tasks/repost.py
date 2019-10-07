@@ -5,6 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from telegram import Bot, ParseMode, TelegramError
 from telegram.error import BadRequest, Unauthorized
 from telegram.utils.request import Request
+from twitter import Api, TwitterError
 
 from words.models import Post, ServiceSubscribe, Service
 from words.ext import db
@@ -49,4 +50,20 @@ def telegram(self, service_id, post_id, post_url):
 
 
 def twitter(self, service_id, post_id, post_url):
-    pass
+    try:
+        service = ServiceSubscribe.query.filter_by(service_subscribe_id=service_id, alive=True).one()
+        post = Post.query.filter_by(post_id=post_id).one()
+        api = Api(service.credentials['consumer_key'],
+                  service.credentials['consumer_secret'],
+                  service.credentials['access_token_key'],
+                  service.credentials['access_token_secret'])
+        if api.VerifyCredentials():
+            api.PostDirectMessage('{}\n{}'.format(post.title, post_url))
+        else:
+            service.alive = False
+            db.session.commit()
+    except NoResultFound:
+        pass
+    except (SQLAlchemyError, TwitterError) as e:
+        logger.exception('twitter')
+        raise self.retry(exc=e, countdown=self.default_retry_delay * (self.request.retries + 1))

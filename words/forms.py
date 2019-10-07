@@ -122,5 +122,5 @@ class TwitterServiceForm(FlaskForm):
 
 service_forms = {
     Service.TELEGRAM.name: TelegramServiceForm,
-#   Service.TWITTER.name: TwitterServiceForm,
+    Service.TWITTER.name: TwitterServiceForm,
 }
