@@ -47,6 +47,9 @@ class User(db.Model):
     def about_plain(self):
         return html2plain(str(self.about_html()))
 
+    def __str__(self):
+        return self.username
+
 
 class ServiceSubscribe(db.Model):
     __tablename__ = 'service_subscribe'
